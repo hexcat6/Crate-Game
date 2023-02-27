@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <ncurses.h>
+#include <ncurses.h>// colour library
 #include <fstream>
 #include <unistd.h>
 #include <cstdlib>
@@ -60,6 +60,7 @@ void screen() {
     }
 }
 
+
 //main game loop
 
 int main()
@@ -80,41 +81,54 @@ int main()
 
     screen();
 
+    init_pair(1, COLOR_BLUE, -1);
+    attrset(COLOR_PAIR(1));
+
+    mvprintw(10,55,"┏━┓");
+    mvprintw(11,55,"┗━┛");
+
     init_pair(2, COLOR_CYAN, -1);
     attrset(COLOR_PAIR(2));
 
-    mvprintw(10,70,"┏━┓");
-    mvprintw(11,70,"┗━┛");
+    mvprintw(10,60,"┏━┓");
+    mvprintw(11,60,"┗━┛");
 
-    init_pair(3, COLOR_RED, -1);
+    init_pair(3, COLOR_GREEN, -1);
     attrset(COLOR_PAIR(3));
 
     mvprintw(10,65,"┏━┓");
     mvprintw(11,65,"┗━┛");
 
-    init_pair(4, COLOR_GREEN, -1);
+    init_pair(4, COLOR_YELLOW, -1);
     attrset(COLOR_PAIR(4));
 
-    mvprintw(10,60,"┏━┓");
-    mvprintw(11,60,"┗━┛");
+    mvprintw(10,70,"┏━┓");
+    mvprintw(11,70,"┗━┛");
 
-    init_pair(5, COLOR_MAGENTA, -1);
+    init_pair(5, COLOR_RED, -1);
     attrset(COLOR_PAIR(5));
-
-    mvprintw(10,55,"┏━┓");
-    mvprintw(11,55,"┗━┛");
-
-    init_pair(6, COLOR_YELLOW, -1);
-    attrset(COLOR_PAIR(6));
 
     mvprintw(10,75,"┏━┓");
     mvprintw(11,75,"┗━┛");
 
-    init_pair(7, COLOR_BLUE, -1);
-    attrset(COLOR_PAIR(7));
+    init_pair(6, COLOR_MAGENTA, -1);
+    attrset(COLOR_PAIR(6));
 
     mvprintw(10,80,"┏━┓");
     mvprintw(11,80,"┗━┛");
+
+    init_pair(7, COLOR_WHITE, -1);
+    attrset(COLOR_PAIR(7));
+
+    mvprintw(10,85,"┏━┓");
+    mvprintw(11,85,"┗━┛");
+
+    init_pair(8, COLOR_BLACK, -1);
+    attrset(COLOR_PAIR(8));
+
+    mvprintw(10,90,"┏━┓");
+    mvprintw(11,90,"┗━┛");
+
     // init_pair(1, COLOR_WHITE, -1);
     // attrset(COLOR_PAIR(1));
 

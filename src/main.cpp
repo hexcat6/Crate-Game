@@ -162,31 +162,40 @@ inventory inventory;
 
 void setcolour (string colour) {
     if (colour == "white") {
-
+        init_pair(1, COLOR_WHITE, -1);
+        attrset(COLOR_PAIR(1));
     }
     if (colour == "pink") {
-
+        init_pair(1, COLOR_MAGENTA, -1);
+        attrset(COLOR_PAIR(1));
     }
     if (colour == "red") {
-
+        init_pair(1, COLOR_RED, -1);
+        attrset(COLOR_PAIR(1));
     }
     if (colour == "yellow") {
-
+        init_pair(1, COLOR_YELLOW, -1);
+        attrset(COLOR_PAIR(1));
     }
     if (colour == "green") {
-
+        init_pair(1, COLOR_GREEN, -1);
+        attrset(COLOR_PAIR(1));
     }
     if (colour == "cyan") {
-
+        init_pair(1, COLOR_CYAN, -1);
+        attrset(COLOR_PAIR(1));
     }
     if (colour == "blue") {
-
+        init_pair(1, COLOR_BLUE, -1);
+        attrset(COLOR_PAIR(1));
     }
     if (colour == "black") {
-
+        init_pair(1, COLOR_BLACK, -1);
+        attrset(COLOR_PAIR(1));
     }
     if (colour == "tnt") {
-
+        init_pair(1, COLOR_RED, COLOR_WHITE);
+        attrset(COLOR_PAIR(1));
     }
 }
 

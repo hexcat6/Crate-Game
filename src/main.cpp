@@ -88,6 +88,7 @@ class player {
 
     private:
         int x;
+        int y;
         int arm;
         int maxarm;
     public:
@@ -112,6 +113,7 @@ class player {
                 for (int y = 0; y <= 6; y++) {
                     if (coordinates[x][y].freespace == true) {
                         maxarm = -2*y+15;
+                        y=y;
                         break;
                     }
                     if ((coordinates[x][y].freespace == false) && (y == 6)) {
@@ -125,6 +127,11 @@ class player {
                 }
                 if (status == "standby") {
                     arm--;
+                }
+                if (arm == maxarm) {
+                    holding = coordinates[x][y];
+                    coordinates[x][y].colour = 0;
+                    
                 }
             }
         }

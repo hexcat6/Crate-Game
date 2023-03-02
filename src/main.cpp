@@ -35,55 +35,6 @@ class crate {
 };
 class crate coordinates[7][6];//7 column, 6 rows 
 
-class inventory {
-    public:
-
-        void spawn() {
-            // srand (time(0));
-            int randomcrate = rand() % 101;
-            int randomcoliumn = rand() % 7;
-            string craterarity[100] = {"white", "pink", "pink", "red", "red", "red", "yellow", "yellow", "yellow", "yellow", "green", "green", "green", "green", "green", "green", "green", "green", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing"};
-
-            if (!(craterarity[randomcrate] == "nothing")) {
-                for (int i = 0; i <= 6; i++) {
-                    if (coordinates[randomcoliumn][i].freespace == true) {
-                        crate newcrate;
-                        if (craterarity[randomcrate] == "blue") {
-                            newcrate.colour = 1;//blue
-                        } else if (craterarity[randomcrate] == "cyan") {
-                            newcrate.colour = 2;//cyan
-                        } else if (craterarity[randomcrate] == "green") {
-                            newcrate.colour = 3;//green
-                        } else if (craterarity[randomcrate] == "yellow") {
-                            newcrate.colour = 4;//yellow
-                        } else if (craterarity[randomcrate] == "red") {
-                            newcrate.colour = 5;//red
-                        } else if (craterarity[randomcrate] == "pink") {
-                            newcrate.colour = 6;//pink
-                        } else if (craterarity[randomcrate] == "white") {
-                            newcrate.colour = 7;//white
-                        }
-                        newcrate.column = randomcoliumn;
-                        newcrate.row = i;
-                        newcrate.freespace = false;
-                        coordinates[randomcoliumn][i] = newcrate;
-                        break;
-                    }
-                }
-            }
-        }
-
-        void draw () {
-            for (int c = 0; c <= 7; c++) {
-                for (int r = 0; r <= 6; r++) {
-                    if (coordinates[c][r].colour != 0) {
-                        coordinates[c][r].draw();
-                    }
-                }
-            }
-        }
-};
-
 class player {
 
     private:
@@ -155,12 +106,57 @@ int currentscore = 0;
 bool gameover = false;
 
 
-inventory inventory;
 player player;
 // different colours
 //COLOR_YELLOW, COLOR_CYAN, COLOR_BLUE, COLOR_WHITE, COLOR_RED, COLOR_GREEN, COLOR_MAGENTA
 
 //functions
+
+        void inventoryspawn() {
+            // srand (time(0));
+            int randomcrate = rand() % 101;
+            int randomcoliumn = rand() % 7;
+            string craterarity[100] = {"white", "pink", "pink", "red", "red", "red", "yellow", "yellow", "yellow", "yellow", "green", "green", "green", "green", "green", "green", "green", "green", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing"};
+
+            if (!(craterarity[randomcrate] == "nothing") && !(player.button == randomcoliumn)) {
+                for (int i = 0; i <= 6; i++) {
+                    if (coordinates[randomcoliumn][i].freespace == true) {
+                        crate newcrate;
+                        if (craterarity[randomcrate] == "blue") {
+                            newcrate.colour = 1;//blue
+                        } else if (craterarity[randomcrate] == "cyan") {
+                            newcrate.colour = 2;//cyan
+                        } else if (craterarity[randomcrate] == "green") {
+                            newcrate.colour = 3;//green
+                        } else if (craterarity[randomcrate] == "yellow") {
+                            newcrate.colour = 4;//yellow
+                        } else if (craterarity[randomcrate] == "red") {
+                            newcrate.colour = 5;//red
+                        } else if (craterarity[randomcrate] == "pink") {
+                            newcrate.colour = 6;//pink
+                        } else if (craterarity[randomcrate] == "white") {
+                            newcrate.colour = 7;//white
+                        }
+                        newcrate.column = randomcoliumn;
+                        newcrate.row = i;
+                        newcrate.freespace = false;
+                        coordinates[randomcoliumn][i] = newcrate;
+                        break;
+                    }
+                }
+            }
+        }
+
+        void inventorydraw () {
+            for (int c = 0; c < 7; c++) {
+                for (int r = 0; r < 6; r++) {
+                    if (coordinates[c][r].colour != 0) {
+                        coordinates[c][r].draw();
+                    }
+                }
+            }
+        }
+
 string readLine(string str, int n) {
     // returns the nth line of a string
     stringstream f(str);
@@ -181,7 +177,7 @@ void draw() {
     for (int i = 0; i < 18; i++) {
         mvprintw(i,0,readLine(screenstring, i).c_str());
     }
-    inventory.draw();
+    inventorydraw();
     player.draw();
 
 
@@ -256,7 +252,7 @@ void game() {
     }
 
     player.move();
-    inventory.spawn();
+    inventoryspawn();
 }
 
 //main game loop

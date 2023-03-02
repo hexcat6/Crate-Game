@@ -1,5 +1,5 @@
 bin/main: bin/main.o 
-	g++ -g -o bin/crate bin/main.o -std=c++11 -Wall -pedantic -lncurses
+	g++ -g -o bin/crate bin/main.o -std=c++11 -Wall -pedantic -lncurses -fsanitize=address
 
 bin/main.o: src/main.cpp
 	mkdir -p bin	

@@ -38,19 +38,28 @@ class crate coordinates[7][6];//7 column, 6 rows
 class player {
 
     private:
-        int x;
-        int y;
         int arm;
         int maxarm;
+        int y;
     public:
+        int x;
         int button;
-        string status; // standby, grabbing, placeing, lowering, raising
+             // standby, grabbing, placeing, lowering, raising
+        enum status {
+            standby,
+            raising,
+            lowering
+        };
+        status status;
         class crate holding;
 
 
         void move() {
-            if (button != x) {
-                if (arm != 0) {
+
+            if (button != x || status == standby) {
+                status = standby;
+
+                if (arm > 0) {
                     arm--;
                 } else if (button < x) {
                     x--;
@@ -61,42 +70,65 @@ class player {
             }
 
             if (button == x) {
-                for (int y = 0; y <= 6; y++) {
-                    if (coordinates[x][y].freespace == true) {
-                        maxarm = -2*y+15;
-                        y=y;
-                        break;
+                if (status != raising) {
+                    status = lowering;
+                }
+                for (int y = 0; y < 7; y++) {
+                    if (holding.freespace) {// not holding anything
+                        if (coordinates[x][y].freespace == true) {
+                            maxarm = -2*y+16;
+                            break;
+                        }
+                        if ((coordinates[x][y].freespace == false) && (y == 6)) {
+                            maxarm = 4;
+                            break;
+                        }
                     }
-                    if ((coordinates[x][y].freespace == false) && (y == 6)) {
-                        maxarm = 3;
-                        y=y;
-                        break;
+                    if (!holding.freespace) {// holding a crate
+                        if (coordinates[x][y].freespace == true) {
+                            maxarm = -2*y+13;
+                            break;
+                        }
                     }
                 }
-                // maxarm = -2*i+15;
-                if (arm < maxarm) {
+
+            
+                if ((status == lowering) && (arm < maxarm)) {
                     arm++;
                 }
-                if (status == "standby") {
+                if (arm == maxarm) {
+                    status = raising;
+                    y = (maxarm-15)/-2;
+                    // y = 2;
+                    if (holding.freespace) { // grabbing
+                        holding = coordinates[x][y];
+                        coordinates[x][y].freespace = true;
+                    } else if (!holding.freespace) { // placing
+                        coordinates[x][y] = holding;
+                        holding.freespace = true;
+                    }
+                }
+                if ((status == raising) && (arm > 0)) {
                     arm--;
                 }
-                if (arm == maxarm) {
-                    holding = coordinates[x][y];
-                    coordinates[x][y].freespace = true;
-                    
-                }
+
             }
         }
 
         void draw () {
             attrset(COLOR_PAIR(7));
-            mvprintw(0,7*x+5,"┓");
+            mvprintw(0,7*x+5,"┳");
             if (arm) {
                 for (int i = 1; i <= arm; i++) {
                     mvprintw(i,7*x+5,"┃");
                 }
             }
-            mvprintw(arm+1,7*x+3,"┏━┗━┓");
+            mvprintw(arm+1,7*x+3,"┏━┻━┓");
+            if (holding.freespace && holding.colour != 0) {
+                attrset(COLOR_PAIR(holding.colour));
+                mvprintw(arm+2,7*x+4,"┏━┓");
+                mvprintw(arm+3,7*x+4,"┗━┛");
+            }
         }
 
 };
@@ -106,8 +138,8 @@ int ch;
 int currentscore = 0;
 bool gameover = false;
 
-
 player player;
+
 // different colours
 //COLOR_YELLOW, COLOR_CYAN, COLOR_BLUE, COLOR_WHITE, COLOR_RED, COLOR_GREEN, COLOR_MAGENTA
 
@@ -118,7 +150,7 @@ void inventoryspawn() {
     int randomcrate = rand() % 100;
     int randomcoliumn = rand() % 7;
     string craterarity[100] = {"white", "pink", "pink", "red", "red", "red", "yellow", "yellow", "yellow", "yellow", "green", "green", "green", "green", "green", "green", "green", "green", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing"};
-    if (!(craterarity[randomcrate] == "nothing") && !(player.button == randomcoliumn)) {
+    if (!(craterarity[randomcrate] == "nothing") && !(player.x == randomcoliumn)) {
         for (int i = 0; i < 6; i++) {
             if (coordinates[randomcoliumn][i].freespace == true) {
                 crate newcrate;
@@ -150,7 +182,7 @@ void inventoryspawn() {
 void inventorydraw () {
     for (int c = 0; c < 7; c++) {
         for (int r = 0; r < 6; r++) {
-            if (coordinates[c][r].colour != 0) {
+            if (coordinates[c][r].colour != 0 && coordinates[c][r].freespace == false) {
                 coordinates[c][r].draw();
             }
         }
@@ -278,8 +310,10 @@ int main()
     init_pair(7, COLOR_WHITE, -1);
     init_pair(8, COLOR_BLACK, -1);
 
-    player.status = "standby";
-    player.status = "grabbing";
+    player.status = player::standby;
+    // player.status = player::lowering;
+    // player.status = "grabbing";
+    player.holding.freespace = true;
     for (int y = 0; y < 7; y++) {
         for (int x = 0; x < 6; x++) {
             coordinates[y][x].freespace = true;

@@ -103,6 +103,7 @@ class player {
                     if (holding.freespace) { // grabbing
                         holding = coordinates[x][y];
                         coordinates[x][y].freespace = true;
+                        // coordinates[x][y].colour = 0;
                     } else if (!holding.freespace) { // placing
                         coordinates[x][y] = holding;
                         holding.freespace = true;
@@ -217,6 +218,7 @@ void draw() {
 
     mvprintw(10,55,"┏━┓");
     mvprintw(11,55,"┗━┛");
+    
 
     attrset(COLOR_PAIR(2));
 

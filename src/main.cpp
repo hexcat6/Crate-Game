@@ -18,7 +18,7 @@
 
 using namespace std;
 
-//variables
+//variabless
 
 class crate {
     public:
@@ -34,6 +34,7 @@ class crate {
         }
 };
 class crate coordinates[7][6];//7 column, 6 rows 
+int columnsize[7];
 
 class player {
 
@@ -73,40 +74,44 @@ class player {
                 if (status != raising) {
                     status = lowering;
                 }
-                for (int y = 0; y < 7; y++) {
-                    if (holding.freespace) {// not holding anything
-                        if (coordinates[x][y].freespace == true) {
-                            maxarm = -2*y+16;
-                            break;
-                        }
-                        if ((coordinates[x][y].freespace == false) && (y == 6)) {
-                            maxarm = 4;
-                            break;
-                        }
+                y = columnsize[x];
+                if (holding.freespace) {// not holding anything
+                    if (coordinates[x][y].freespace == true) {
+                        maxarm = -2*y+16;
+                        // mvprintw(12,60,"1");
                     }
-                    if (!holding.freespace) {// holding a crate
-                        if (coordinates[x][y].freespace == true) {
-                            maxarm = -2*y+13;
-                            break;
-                        }
+                    if ((coordinates[x][y].freespace == false) && (y == 6)) {
+                        maxarm = 4;
+                        // mvprintw(12,60,"2");
+                    }
+                } else if (!holding.freespace) {// holding a crate
+                    if ((coordinates[x][y].freespace == true) && (y == 0)) {
+                        maxarm = 14;
+                        // mvprintw(12,60,"3");
+                    }
+                    if (coordinates[x][y].freespace == true) {
+                        maxarm = -2*y+13;
+                        // mvprintw(12,60,"4");
                     }
                 }
-
             
                 if ((status == lowering) && (arm < maxarm)) {
                     arm++;
                 }
                 if (arm == maxarm) {
                     status = raising;
-                    y = (maxarm-15)/-2;
+                    // y = (maxarm-15)/-2;
                     // y = 2;
+
                     if (holding.freespace) { // grabbing
-                        holding = coordinates[x][y];
                         coordinates[x][y].freespace = true;
+                        holding = coordinates[x][y];
+                        columnsize[x]--;
                         // coordinates[x][y].colour = 0;
                     } else if (!holding.freespace) { // placing
                         coordinates[x][y] = holding;
                         holding.freespace = true;
+                        columnsize[x]++;
                     }
                 }
                 if ((status == raising) && (arm > 0)) {
@@ -174,6 +179,7 @@ void inventoryspawn() {
                 newcrate.row = i;
                 newcrate.freespace = false;
                 coordinates[randomcoliumn][i] = newcrate;
+                columnsize[randomcoliumn]++;
                 break;
             }
         }
@@ -206,56 +212,14 @@ string readLine(string str, int n) {
 void draw() {
     // print the first of the screen line to cover up shape
 
-    const string screenstring = "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓    ┏━━━━━score━━━━━┓\n┃                                                  ┃    ┃ current: 0    ┃\n┃                                                  ┃    ┃ high: 0       ┃\n┃                                                  ┃    ┗━━━━━━━━━━━━━━━┛\n┃                                                  ┃    ┏━━━━━boost━━━━━┓\n┃                                                  ┃    ┃               ┃\n┃                                                  ┃    ┃     T * |     ┃\n┃                                                  ┃    ┗━━━━━━━━━━━━━━━┛\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┗━━┗━1━┛━━┗━2━┛━━┗━3━┛━━┗━4━┛━━┗━5━┛━━┗━6━┛━━┗━7━┛━┛\n";
+    const string screenstring = "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓    ┏━━━━━score━━━━━┓\n┃                                                  ┃    ┃ current: 0    ┃\n┃                                                  ┃    ┃ high: 0       ┃\n┃                                                  ┃    ┗━━━━━━━━━━━━━━━┛\n┃                                                  ┃    ┏━━━━━items━━━━━┓\n┃                                                  ┃    ┃               ┃\n┃                                                  ┃    ┃     T * |     ┃\n┃                                                  ┃    ┗━━━━━━━━━━━━━━━┛\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┗━━┗━1━┛━━┗━2━┛━━┗━3━┛━━┗━4━┛━━┗━5━┛━━┗━6━┛━━┗━7━┛━┛\n";
     for (int i = 0; i < 18; i++) {
         mvprintw(i,0,readLine(screenstring, i).c_str());
     }
     inventorydraw();
     player.draw();
 
-
-    attrset(COLOR_PAIR(1));
-
-    mvprintw(10,55,"┏━┓");
-    mvprintw(11,55,"┗━┛");
-    
-
-    attrset(COLOR_PAIR(2));
-
-    mvprintw(10,60,"┏━┓");
-    mvprintw(11,60,"┗━┛");
-
-    attrset(COLOR_PAIR(3));
-
-    mvprintw(10,65,"┏━┓");
-    mvprintw(11,65,"┗━┛");
-
-    attrset(COLOR_PAIR(4));
-
-    mvprintw(10,70,"┏━┓");
-    mvprintw(11,70,"┗━┛");
-
-    attrset(COLOR_PAIR(5));
-
-    mvprintw(10,75,"┏━┓");
-    mvprintw(11,75,"┗━┛");
-
-    attrset(COLOR_PAIR(6));
-
-    mvprintw(10,80,"┏━┓");
-    mvprintw(11,80,"┗━┛");
-
-    attrset(COLOR_PAIR(7));
-
-    mvprintw(10,85,"┏━┓");
-    mvprintw(11,85,"┗━┛");
-
-    attrset(COLOR_PAIR(8));
-
-    mvprintw(10,90,"┏━┓");
-    mvprintw(11,90,"┗━┛");
-
-    attrset(COLOR_PAIR(7));
+    attrset(COLOR_PAIR(7)); // delete this line for a cool effect :)
 }
 
 void game() {
@@ -281,6 +245,33 @@ void game() {
         case '7':
             player.button = 6;
             break;
+        case KEY_MOUSE: 
+            MEVENT event;
+            if (getmouse(&event) == OK) {
+                if (event.x >= 0 && event.x <= 8) {
+                    player.button = 0;
+                }
+                if (event.x >= 9 && event.x <= 15) {
+                    player.button = 1;
+                }
+                if (event.x >= 16 && event.x <= 22) {
+                    player.button = 2;
+                }
+                if (event.x >= 23 && event.x <= 29) {
+                    player.button = 3;
+                }
+                if (event.x >= 30 && event.x <= 36) {
+                    player.button = 4;
+                }
+                if (event.x >= 37 && event.x <= 43) {
+                    player.button = 5;
+                }
+                if (event.x >= 44) {
+                    player.button = 6;
+                }
+            }
+
+            break; 
         default: 
             break;
     }
@@ -299,6 +290,7 @@ int main()
     noecho();
     keypad(stdscr, true);
     nodelay(stdscr, true);
+    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
     curs_set(0);
 	start_color();
     use_default_colors();

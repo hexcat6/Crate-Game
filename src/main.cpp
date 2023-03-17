@@ -19,7 +19,6 @@
 using namespace std;
 
 //variabless
-
 class crate {
     public:
         int colour;
@@ -33,6 +32,82 @@ class crate {
             mvprintw(-2*row+16,7*column+4,"┗━┛");
         }
 };
+
+class Inventory {
+    private:
+        int top[7];
+    public:
+        class crate coordinates[7][6];
+        Inventory() {
+            for (int i = 0; i < 7; i++) {
+                top[i] = -1;
+            }
+        }
+        bool push(int x, class crate item) {
+            if (top[x] > 7) {
+                // cout << "Stack Overflow!!!";
+                return false;
+            } else {
+                coordinates[x][top[x]++] = item;
+                // cout<<item<<endl;
+                return true;
+            }
+        };
+        class crate pop(int x) {
+            if (!(top[x] < 0)) {
+                class crate item = coordinates[x][top[x]--];
+                return item;
+            }
+        };
+        bool isEmpty(int x) {
+            return (top[x] < 0);
+        };
+        void draw() {
+            for (int x = 0; x < 7; x++) {
+                for (int y = 0; y < 6; y++) {
+                    if (coordinates[x][y].colour != 0 && coordinates[x][y].freespace == false) {
+                        coordinates[x][y].draw();
+                    }
+                }
+            }
+        };
+        void spawn() {
+            // srand (time(0));
+            int randomcrate = rand() % 100;
+            int randomx = rand() % 7;
+            string craterarity[100] = {"white", "pink", "pink", "red", "red", "red", "yellow", "yellow", "yellow", "yellow", "green", "green", "green", "green", "green", "green", "green", "green", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing"};
+            if (!(craterarity[randomcrate] == "nothing") && !(player.x == randomx)) {
+                int y = top[x];
+                    if (coordinates[randomx][y].freespace == true) {
+                        class crate newcrate;
+                        if (craterarity[randomcrate] == "blue") {
+                            newcrate.colour = 1;//blue
+                        } else if (craterarity[randomcrate] == "cyan") {
+                            newcrate.colour = 2;//cyan
+                        } else if (craterarity[randomcrate] == "green") {
+                            newcrate.colour = 3;//green
+                        } else if (craterarity[randomcrate] == "yellow") {
+                            newcrate.colour = 4;//yellow
+                        } else if (craterarity[randomcrate] == "red") {
+                            newcrate.colour = 5;//red
+                        } else if (craterarity[randomcrate] == "pink") {
+                            newcrate.colour = 6;//pink
+                        } else if (craterarity[randomcrate] == "white") {
+                            newcrate.colour = 7;//white
+                        }
+                        newcrate.column = randomx;
+                        newcrate.row = y;
+                        newcrate.freespace = false;
+                        push(randomx, newcrate);
+                        // coordinates[randomx][y] = newcrate;
+                        // columnsize[randomx]++;
+                        break;
+                    }
+                
+            }
+        }
+};
+
 class crate coordinates[7][6];//7 column, 6 rows 
 int columnsize[7];
 

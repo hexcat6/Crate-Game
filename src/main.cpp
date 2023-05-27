@@ -22,24 +22,51 @@ using namespace std;
 class crate {
     public:
         int colour;
-        int column;
-        int row;
-        bool freespace;
+        bool air;
 
-        void draw() {
-            attrset(COLOR_PAIR(colour));
-            mvprintw(-2*row+15,7*column+4,"┏━┓");
-            mvprintw(-2*row+16,7*column+4,"┗━┛");
+        void draw(int x, int y) {
+            if (!air) {
+                attrset(COLOR_PAIR(colour));
+                mvprintw(-2*y+15,7*x+4,"┏━┓%d",x);
+                mvprintw(-2*y+16,7*x+4,"┗━┛%d",y);
+            }
         }
 };
 
 class inventory {
     public:
+        bool spawned;
         int top[7];
         class crate coordinates[7][6];
+        inventory() { 
+            for (int i = 0; i < 7; i++) {
+                top[i] = 0;
+            }
+            for (int y = 0; y < 7; y++) {
+                for (int x = 0; x < 6; x++) {
+                    coordinates[y][x].air = true;
+                }
+            }
+        }
+
+        bool isEmpty(int x) {
+            return (coordinates[x][0].air);
+        };
+
+        bool isFull(int x) {
+            return (top[x] == 5);
+        };
+
+        class crate pop(int x) {
+            if (!isEmpty(x)) {
+                class crate item = coordinates[x][top[x]];
+                coordinates[x][top[x]--].air = true;
+                return item;
+            }
+        };
 
         bool push(int x, class crate item) {
-            if (top[x] > 6) {//full
+            if (isFull(x)) {//full
                 return false;
             } else {
                 coordinates[x][top[x]++] = item;
@@ -47,60 +74,41 @@ class inventory {
             }
         };
 
-        class crate pop(int x) {
-            class crate item = coordinates[x][top[x]--];
-            coordinates[x][top[x]].freespace = true;
-            return item;
-        };
-
-        bool isEmpty(int x) {
-            return (top[x] == 0);
-        };
-
-        bool isFull(int x) {
-            return (top[x] == 6);
-        };
-
         void draw() {
             for (int x = 0; x < 7; x++) {
                 for (int y = 0; y < 6; y++) {
-                    if (coordinates[x][y].colour != 0 && coordinates[x][y].freespace == false) {
-                        coordinates[x][y].draw();
-                    }
+                    coordinates[x][y].draw(x,y);
                 }
             }
         };
 
-        void spawn(int playerx) {
+        void spawn(int playerx) {//wow
             // srand (time(0));
             int randomcrate = rand() % 100;
             int randomx = rand() % 7;
             string craterarity[100] = {"white", "pink", "pink", "red", "red", "red", "yellow", "yellow", "yellow", "yellow", "green", "green", "green", "green", "green", "green", "green", "green", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing"};
             if (!(craterarity[randomcrate] == "nothing") && !(playerx == randomx)) {
                 if (!(isFull(randomx))) {
-                int y = top[randomx];
-                    if (coordinates[randomx][y].freespace == true) {
-                        class crate newcrate;
-                        if (craterarity[randomcrate] == "blue") {
-                            newcrate.colour = 1;//blue
-                        } else if (craterarity[randomcrate] == "cyan") {
-                            newcrate.colour = 2;//cyan
-                        } else if (craterarity[randomcrate] == "green") {
-                            newcrate.colour = 3;//green
-                        } else if (craterarity[randomcrate] == "yellow") {
-                            newcrate.colour = 4;//yellow
-                        } else if (craterarity[randomcrate] == "red") {
-                            newcrate.colour = 5;//red
-                        } else if (craterarity[randomcrate] == "pink") {
-                            newcrate.colour = 6;//pink
-                        } else if (craterarity[randomcrate] == "white") {
-                            newcrate.colour = 7;//white
-                        }
-                        newcrate.column = randomx;
-                        newcrate.row = y;
-                        newcrate.freespace = false;
-                        push(randomx, newcrate);
+                    class crate newcrate = {};
+                    if (craterarity[randomcrate] == "blue") {
+                        newcrate.colour = 1;//blue
+                    } else if (craterarity[randomcrate] == "cyan") {
+                        newcrate.colour = 2;//cyan
+                    } else if (craterarity[randomcrate] == "green") {
+                        newcrate.colour = 3;//green
+                    } else if (craterarity[randomcrate] == "yellow") {
+                        newcrate.colour = 4;//yellow
+                    } else if (craterarity[randomcrate] == "red") {
+                        newcrate.colour = 5;//red
+                    } else if (craterarity[randomcrate] == "pink") {
+                        newcrate.colour = 6;//pink
+                    } else if (craterarity[randomcrate] == "white") {
+                        newcrate.colour = 7;//white
+                    } else {
+                        newcrate.colour = 8;
                     }
+                    newcrate.air = false;
+                    spawned = push(randomx, newcrate);
                 }
             }
         }
@@ -108,26 +116,23 @@ class inventory {
 };
 class inventory inventory;
 
+// player code need fixing work on it stupid dumass
 class player {
 
     private:
         int arm;
-        int maxarm;
         int y;
     public:
+        int maxarm;
         int x;
         int button;
-        int onclick;
-        // standby, grabbing, placeing, lowering, raising
-        enum status {
-            standby,
-            raising,
-            lowering
-        };
-        enum status status;
         class crate holding;
-        bool isHolding;
+        bool down;
 
+        player() {
+            holding.air = true;
+            down = false;
+        }
 
         void move() {
 
@@ -139,53 +144,48 @@ class player {
                 } else if (button > x) {
                     x++;
                 }
-                
-                if (button == x) {
-                    status = lowering;
-                } else if (button != x) {
-                    status = standby;
-                }
-
             }
 
-            if (onclick == x || button == x) {
+            if (button == x) {
                 y = inventory.top[x];
-                if (isHolding == false) {// work out how low the arm can go when holding nothing
-                    if (inventory.isFull(x)) {// column is full and arm is holding nothing
-                        maxarm = 3;
-                    } else if (inventory.isEmpty(x)) {// column is empty and arm is holding nothing
-                        maxarm = 15;
-                    } else { // is holding nothing
-                        maxarm = -2*y+16;
-                    }
-                } else if (isHolding == true) {// work out how low the arm can go when holding a crate
-                    if (inventory.isFull(x)) {// column is full and arm is holding a crate
-                        maxarm = 0;
-                    } else if (inventory.isEmpty(x)) {// column is empty and arm is holding a crate
-                        maxarm = 13;
-                    } else { // is holding a crate
-                        maxarm = -2*y+13;
-                    }
-                }
-
-                if (arm < maxarm) { //lower and raise arm animation
-                    status = lowering;
-                }
-                if (arm < 0) {
-                    status = raising;
-                }
-
-                if (arm == maxarm) { //pick up or place
-                    onclick = -1;
-                    if (holding.freespace) { // grabbing
-                        if (!(inventory.isEmpty(x))) {
-                            holding = inventory.pop(x);
+                if (down == true) {
+                    if (holding.air == false) {// work out how low the arm can go when holding nothing
+                        if (inventory.isFull(x)) {// column is full and arm is holding nothing
+                            maxarm = 0;
+                        } else if (inventory.isEmpty(x)) {// column is empty and arm is holding nothing
+                            maxarm = 13;
+                        } else { // is holding nothing
+                            maxarm = -2*y+13;
                         }
-                    } else if (!holding.freespace) { // placing
-                        isHolding = !(inventory.push(x, holding));
+                    } else if (holding.air == true) {// work out how low the arm can go when holding a crate
+                        if (inventory.isFull(x)) {// column is full and arm is holding a crate
+                            maxarm = 3;
+                        } else if (inventory.isEmpty(x)) {// column is empty and arm is holding a crate
+                            maxarm = 15;
+                        } else { // is holding a crate
+                            maxarm = -2*y+15;
+                        }
                     }
                 }
-            }
+
+                if ((arm == maxarm) && (maxarm != 0)) { //pick up or place
+                    if (holding.air == true) { // grabbing
+                        holding = inventory.pop(x);
+                    } else if (holding.air == false) { // placing
+                        holding.air = !(inventory.push(x, holding));
+                    }
+                    down = false;
+                    maxarm = 0;
+                }
+
+                if ((maxarm < arm) && (!down)) {// raise and lower arm animation
+                    arm--;
+                } else if ((maxarm > arm) && (down)) {
+                    arm++;
+                }
+
+            }//yo if you are reading this then you are cool :)
+
         }
 
         void draw () {
@@ -197,7 +197,7 @@ class player {
                 }
             }
             mvprintw(arm+1,7*x+3,"┏━┻━┓");
-            if (holding.freespace && holding.colour != 0) {
+            if (!holding.air && holding.colour != 0) {
                 attrset(COLOR_PAIR(holding.colour));
                 mvprintw(arm+2,7*x+4,"┏━┓");
                 mvprintw(arm+3,7*x+4,"┗━┛");
@@ -206,12 +206,11 @@ class player {
 
 };
 
+class player player;
 
 int ch;
 int currentscore = 0;
 bool gameover = false;
-
-class player player;
 
 string readLine(string str, int n) {
     // returns the nth line of a string
@@ -236,13 +235,21 @@ void draw() {
 
     inventory.draw();
     player.draw();
-    mvprintw(12,60,"         ");
-    mvprintw(12,60,"%d",inventory.top[player.x]);
+    mvprintw(12,60,"             ");
+    mvprintw(12,60,"top: %d",inventory.top[player.x]);
+    mvprintw(11,60,"             ");
+    mvprintw(11,60,"max arm: %d",player.maxarm);
     mvprintw(13,60,"         ");
-    if (!player.holding.freespace) {
-        mvprintw(13,60,"false");
-    } else if (player.holding.freespace) {
-        mvprintw(13,60,"true");
+    if (!player.holding.air) {
+        mvprintw(13,60,"air: false ");
+    } else if (player.holding.air) {
+        mvprintw(13,60,"air: true ");
+    }
+    mvprintw(41,60,"             ");
+    if (inventory.spawned == false) {
+        mvprintw(14,60,"spawned: false ");
+    } else if (inventory.spawned == true) {
+        mvprintw(14,60,"spawned: true ");
     }
     attrset(COLOR_PAIR(7)); // delete this line for a cool effect :)
 }
@@ -251,62 +258,56 @@ void game() {
 	switch(ch) {
         case '1':
             player.button = 0;
-            player.onclick = 0;
+            player.down = true;
             break;
         case '2': 
             player.button = 1;
-            player.onclick = 1;
+            player.down = true;
             break;
         case '3': 
             player.button = 2;
-            player.onclick = 2;
+            player.down = true;
             break;
         case '4':
             player.button = 3;
-            player.onclick = 3;
+            player.down = true;
             break;
         case '5':
             player.button = 4;
-            player.onclick = 4;
+            player.down = true;
             break;
         case '6':
             player.button = 5;
-            player.onclick = 5;
+            player.down = true;
             break;
         case '7':
             player.button = 6;
-            player.onclick = 6;
+            player.down = true;
             break;
         case KEY_MOUSE: 
             MEVENT event;
+            player.down = true;
             if (getmouse(&event) == OK) {
                 if (event.x >= 0 && event.x <= 8) {
                     player.button = 0;
-                    player.onclick = 0;
                 }
                 if (event.x >= 9 && event.x <= 15) {
                     player.button = 1;
-                    player.onclick = 1;
                 }
                 if (event.x >= 16 && event.x <= 22) {
                     player.button = 2;
-                    player.onclick = 2;
                 }
                 if (event.x >= 23 && event.x <= 29) {
                     player.button = 3;
-                    player.onclick = 3;
                 }
                 if (event.x >= 30 && event.x <= 36) {
                     player.button = 4;
-                    player.onclick = 4;
                 }
                 if (event.x >= 37 && event.x <= 43) {
                     player.button = 5;
-                    player.onclick = 5;
                 }
                 if (event.x >= 44) {
                     player.button = 6;
-                    player.onclick = 6;
                 }
             }
 
@@ -343,15 +344,6 @@ int main()
     init_pair(7, COLOR_WHITE, -1);
     init_pair(8, COLOR_BLACK, -1);
 
-    player.status = player::standby;
-    player.isHolding = false;
-    player.holding.freespace = true;
-    for (int y = 0; y < 7; y++) {
-        for (int x = 0; x < 6; x++) {
-            inventory.coordinates[y][x].freespace = true;
-        }
-    }
-
 
     //clear the screen and refreash it
     clear();
@@ -370,5 +362,3 @@ int main()
     endwin();
     return 0;
 }
-
-

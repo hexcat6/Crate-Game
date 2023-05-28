@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+src/stack.cpp
+bin/
+.DS_Store

@@ -27,8 +27,8 @@ class crate {
         void draw(int x, int y) {
             if (!air) {
                 attrset(COLOR_PAIR(colour));
-                mvprintw(-2*y+15,7*x+4,"┏━┓%d",x);
-                mvprintw(-2*y+16,7*x+4,"┗━┛%d",y);
+                mvprintw(-2*y+15,7*x+4,"┏━┓");
+                mvprintw(-2*y+16,7*x+4,"┗━┛");
             }
         }
 };
@@ -38,9 +38,9 @@ class inventory {
         bool spawned;
         int top[7];
         class crate coordinates[7][6];
-        inventory() { 
+        inventory() {
             for (int i = 0; i < 7; i++) {
-                top[i] = 0;
+                top[i] = -1;
             }
             for (int y = 0; y < 7; y++) {
                 for (int x = 0; x < 6; x++) {
@@ -50,7 +50,7 @@ class inventory {
         }
 
         bool isEmpty(int x) {
-            return (coordinates[x][0].air);
+            return ((top[x] <= 0) && (coordinates[x][top[x]].air));
         };
 
         bool isFull(int x) {
@@ -58,7 +58,7 @@ class inventory {
         };
 
         class crate pop(int x) {
-            if (!isEmpty(x)) {
+            if ((!isEmpty(x)) && (coordinates[x][top[x]].air == false)) {
                 class crate item = coordinates[x][top[x]];
                 coordinates[x][top[x]--].air = true;
                 return item;
@@ -69,7 +69,8 @@ class inventory {
             if (isFull(x)) {//full
                 return false;
             } else {
-                coordinates[x][top[x]++] = item;
+                top[x]++;
+                coordinates[x][top[x]] = item;
                 return true;
             }
         };
@@ -105,14 +106,13 @@ class inventory {
                     } else if (craterarity[randomcrate] == "white") {
                         newcrate.colour = 7;//white
                     } else {
-                        newcrate.colour = 8;
+                        newcrate.colour = 8;//black
                     }
                     newcrate.air = false;
                     spawned = push(randomx, newcrate);
                 }
             }
         }
-        
 };
 class inventory inventory;
 
@@ -155,7 +155,7 @@ class player {
                         } else if (inventory.isEmpty(x)) {// column is empty and arm is holding nothing
                             maxarm = 13;
                         } else { // is holding nothing
-                            maxarm = -2*y+13;
+                            maxarm = -2*y+11;
                         }
                     } else if (holding.air == true) {// work out how low the arm can go when holding a crate
                         if (inventory.isFull(x)) {// column is full and arm is holding a crate
@@ -163,7 +163,7 @@ class player {
                         } else if (inventory.isEmpty(x)) {// column is empty and arm is holding a crate
                             maxarm = 15;
                         } else { // is holding a crate
-                            maxarm = -2*y+15;
+                            maxarm = -2*y+13;
                         }
                     }
                 }
@@ -173,6 +173,7 @@ class player {
                         holding = inventory.pop(x);
                     } else if (holding.air == false) { // placing
                         holding.air = !(inventory.push(x, holding));
+                        holding.air = true;
                     }
                     down = false;
                     maxarm = 0;

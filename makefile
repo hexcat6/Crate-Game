@@ -9,7 +9,7 @@ ifneq ($(OS),Windows_NT)
 endif
 
 bin/main: bin/main.o 
-	g++ -g -o bin/crate bin/main.o -std=c++20 -Wall -pedantic -Werror $(NCURSES) -fsanitize=undefined,address
+	g++ -g -o bin/crate bin/main.o -std=c++20 -Wall -pedantic -Werror $(NCURSES) #-fsanitize=undefined,address
 
 
 bin/main.o: src/main.cpp

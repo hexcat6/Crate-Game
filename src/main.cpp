@@ -19,6 +19,10 @@
 using namespace std;
 
 //variabless
+
+int score = 0;
+bool gameover = false;
+
 class crate {
     public:
         int colour;
@@ -34,6 +38,8 @@ class crate {
 };
 
 class inventory {
+    private:
+        int nextspawntime;
     public:
         bool spawned;
         int top[7];
@@ -50,7 +56,7 @@ class inventory {
         }
 
         bool isEmpty(int x) {
-            return ((top[x] <= 0) && (coordinates[x][top[x]].air));
+            return ((top[x] < 0) && (coordinates[x][0].air));
         };
 
         bool isFull(int x) {
@@ -71,6 +77,7 @@ class inventory {
             } else {
                 top[x]++;
                 coordinates[x][top[x]] = item;
+                // coordinates[x][5] = item;
                 return true;
             }
         };
@@ -84,35 +91,66 @@ class inventory {
         };
 
         void spawn(int playerx) {//wow
-            // srand (time(0));
-            int randomcrate = rand() % 100;
-            int randomx = rand() % 7;
-            string craterarity[100] = {"white", "pink", "pink", "red", "red", "red", "yellow", "yellow", "yellow", "yellow", "green", "green", "green", "green", "green", "green", "green", "green", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing", "nothing"};
-            if (!(craterarity[randomcrate] == "nothing") && !(playerx == randomx)) {
-                if (!(isFull(randomx))) {
-                    class crate newcrate = {};
-                    if (craterarity[randomcrate] == "blue") {
-                        newcrate.colour = 1;//blue
-                    } else if (craterarity[randomcrate] == "cyan") {
-                        newcrate.colour = 2;//cyan
-                    } else if (craterarity[randomcrate] == "green") {
-                        newcrate.colour = 3;//green
-                    } else if (craterarity[randomcrate] == "yellow") {
-                        newcrate.colour = 4;//yellow
-                    } else if (craterarity[randomcrate] == "red") {
-                        newcrate.colour = 5;//red
-                    } else if (craterarity[randomcrate] == "pink") {
-                        newcrate.colour = 6;//pink
-                    } else if (craterarity[randomcrate] == "white") {
-                        newcrate.colour = 7;//white
-                    } else {
-                        newcrate.colour = 8;//black
+            if (time(0) >= nextspawntime) {
+                srand(time(0));
+                int randomcrate = rand() % 40;
+                int randomx = rand() % 7;
+                string craterarity[40] = {"blue", "blue", "blue", "blue", "blue", "red", "yellow", "yellow", "yellow", "yellow", "green", "green", "green", "green", "green", "green", "green", "green", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue"};
+                if (playerx != randomx) {
+                    if (!(isFull(randomx))) {
+                        class crate newcrate = {};
+                        if (craterarity[randomcrate] == "blue") {
+                            newcrate.colour = 1;//blue
+                        } else if (craterarity[randomcrate] == "cyan") {
+                            newcrate.colour = 2;//cyan
+                        } else if (craterarity[randomcrate] == "green") {
+                            newcrate.colour = 3;//green
+                        } else if (craterarity[randomcrate] == "yellow") {
+                            newcrate.colour = 4;//yellow
+                        } else if (craterarity[randomcrate] == "red") {
+                            newcrate.colour = 5;//red
+                        } else if (craterarity[randomcrate] == "pink") {
+                            newcrate.colour = 6;//pink
+                        } else if (craterarity[randomcrate] == "white") {
+                            newcrate.colour = 7;//white
+                        } else {
+                            newcrate.colour = 8;//black
+                        }
+                        newcrate.air = false;
+                        spawned = push(randomx, newcrate);
                     }
-                    newcrate.air = false;
-                    spawned = push(randomx, newcrate);
+                }
+                nextspawntime = time(0) + rand() % 6;
+            }
+        }
+
+        void gravity() {
+            for (int x = 0; x < 7; x++) {
+                for (int y = 1; y < 6; y++) {
+                    if ((coordinates[x][y].air == false) && (coordinates[x][y-1].air == true)) {
+                        coordinates[x][y-1] = coordinates[x][y];
+                        coordinates[x][y].air = true;
+                    }
                 }
             }
         }
+
+        void crunch() {
+            for (int x = 0; x < 7; x++) {
+                for (int y = 0; y < 4; y++) {
+                    if ((coordinates[x][y].air == false) && (coordinates[x][y+1].air == false) && (coordinates[x][y+2].air == false)) {
+                        if ((coordinates[x][y].colour == coordinates[x][y+1].colour) && (coordinates[x][y].colour == coordinates[x][y+2].colour)) {
+                            if (coordinates[x][y].colour < 8) {
+                                coordinates[x][y].colour++;
+                                pop(x);pop(x);
+                                score += coordinates[x][y].colour;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 };
 class inventory inventory;
 
@@ -122,8 +160,8 @@ class player {
     private:
         int arm;
         int y;
-    public:
         int maxarm;
+    public:
         int x;
         int button;
         class crate holding;
@@ -210,8 +248,6 @@ class player {
 class player player;
 
 int ch;
-int currentscore = 0;
-bool gameover = false;
 
 string readLine(string str, int n) {
     // returns the nth line of a string
@@ -228,6 +264,7 @@ string readLine(string str, int n) {
 
 void draw() {
     // print the first of the screen line to cover up shape
+    attrset(COLOR_PAIR(7)); // delete this line for a cool effect :)
 
     const string screenstring = "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓    ┏━━━━━score━━━━━┓\n┃                                                  ┃    ┃ current: 0    ┃\n┃                                                  ┃    ┃ high: 0       ┃\n┃                                                  ┃    ┗━━━━━━━━━━━━━━━┛\n┃                                                  ┃    ┏━━━━━items━━━━━┓\n┃                                                  ┃    ┃               ┃\n┃                                                  ┃    ┃     T * |     ┃\n┃                                                  ┃    ┗━━━━━━━━━━━━━━━┛\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┗━━┗━1━┛━━┗━2━┛━━┗━3━┛━━┗━4━┛━━┗━5━┛━━┗━6━┛━━┗━7━┛━┛\n";
     for (int i = 0; i < 18; i++) {
@@ -236,23 +273,21 @@ void draw() {
 
     inventory.draw();
     player.draw();
-    mvprintw(12,60,"             ");
-    mvprintw(12,60,"top: %d",inventory.top[player.x]);
-    mvprintw(11,60,"             ");
-    mvprintw(11,60,"max arm: %d",player.maxarm);
-    mvprintw(13,60,"         ");
-    if (!player.holding.air) {
-        mvprintw(13,60,"air: false ");
-    } else if (player.holding.air) {
-        mvprintw(13,60,"air: true ");
+    // mvprintw(12,60,"          ");
+    // mvprintw(12,60,"top: %d", inventory.top[player.x]);
+    mvprintw(1,67,"%d", score);// draws the score to the screen
+    if (gameover) {
+        const string gameoverstring = "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\n┃                    Game Over!                    ┃\n┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
+        for (int i = 0; i < 3; i++) {
+            mvprintw(9+i,0,readLine(gameoverstring, i).c_str());
+        }
     }
-    mvprintw(41,60,"             ");
-    if (inventory.spawned == false) {
-        mvprintw(14,60,"spawned: false ");
-    } else if (inventory.spawned == true) {
-        mvprintw(14,60,"spawned: true ");
+}
+
+void endgame() {
+    if ((player.holding.air == false) && (inventory.isFull(0)) && (inventory.isFull(1)) && (inventory.isFull(2)) && (inventory.isFull(3)) && (inventory.isFull(4)) && (inventory.isFull(5)) && (inventory.isFull(6)) && (inventory.isFull(7))) {
+        gameover = true;
     }
-    attrset(COLOR_PAIR(7)); // delete this line for a cool effect :)
 }
 
 void game() {
@@ -319,7 +354,13 @@ void game() {
 
     player.move();
     inventory.spawn(player.x);
+    inventory.gravity();
+    inventory.crunch();
+    endgame();
 }
+
+
+
 
 //main game loop
 
@@ -345,17 +386,18 @@ int main()
     init_pair(7, COLOR_WHITE, -1);
     init_pair(8, COLOR_BLACK, -1);
 
-
     //clear the screen and refreash it
     clear();
     refresh();
     // the main game stuff starts here
 
 	while ((ch = getch()) != 'q' && ch != 'Q') {
-        draw();
-        game();
-        refresh();
-        usleep(100000);
+        if (gameover == false) {
+            game();
+            draw();
+            refresh();
+            usleep(50000);
+        }
     }
     //and ends here
     refresh();

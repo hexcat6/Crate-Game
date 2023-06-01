@@ -25,14 +25,32 @@ bool gameover = false;
 
 class crate {
     public:
+        enum type {
+            basic,
+            tnt,
+            unbreakable 
+        };type t;
         int colour;
         bool air;
+        int tickcounter;
 
         void draw(int x, int y) {
             if (!air) {
-                attrset(COLOR_PAIR(colour));
-                mvprintw(-2*y+15,7*x+4,"┏━┓");
-                mvprintw(-2*y+16,7*x+4,"┗━┛");
+                if (t == basic) {
+                    attrset(COLOR_PAIR(colour));
+                    mvprintw(-2*y+15,7*x+4,"┏━┓");
+                    mvprintw(-2*y+16,7*x+4,"┗━┛");
+                }
+                if (t == tnt) {
+                    attrset(COLOR_PAIR(colour));
+                    mvprintw(-2*y+15,7*x+4,"┏┻┓");
+                    mvprintw(-2*y+16,7*x+4,"┗━┛");
+                }
+                if (t == unbreakable) {
+                    attrset(COLOR_PAIR(colour));
+                    mvprintw(-2*y+15,7*x+4,"┏┓┓");
+                    mvprintw(-2*y+16,7*x+4,"┗┗┛");
+                }
             }
         }
 };
@@ -92,10 +110,18 @@ class inventory {
                 srand(time(0));
                 int randomcrate = rand() % 40;
                 int randomx = rand() % 7;
-                string craterarity[40] = {"blue", "blue", "blue", "blue", "blue", "red", "yellow", "yellow", "yellow", "yellow", "green", "green", "green", "green", "green", "green", "green", "green", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue"};
+                string craterarity[42] = {"blue", "blue", "blue", "blue", "blue", "red", "yellow", "yellow", "yellow", "yellow", "green", "green", "green", "green", "green", "green", "green", "green", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "tnt", "unbreakable"};
                 if (playerx != randomx) {
                     if (!(isFull(randomx))) {
                         class crate newcrate = {};
+                        if (craterarity[randomcrate] == "tnt") {
+                            newcrate.t = crate::tnt;
+                        } else if (craterarity[randomcrate] == "unbreakable") {
+                            newcrate.t = crate::unbreakable;
+                        } else {
+                            newcrate.t = crate::basic;
+                        }
+
                         if (craterarity[randomcrate] == "blue") {
                             newcrate.colour = 1;//blue
                         } else if (craterarity[randomcrate] == "cyan") {
@@ -104,7 +130,7 @@ class inventory {
                             newcrate.colour = 3;//green
                         } else if (craterarity[randomcrate] == "yellow") {
                             newcrate.colour = 4;//yellow
-                        } else if (craterarity[randomcrate] == "red") {
+                        } else if (craterarity[randomcrate] == "red" || craterarity[randomcrate] == "tnt") {
                             newcrate.colour = 5;//red
                         } else if (craterarity[randomcrate] == "pink") {
                             newcrate.colour = 6;//pink
@@ -276,8 +302,8 @@ void draw() {
 
     inventory.draw();
     player.draw();
-    // mvprintw(12,60,"          ");
-    // mvprintw(12,60,"top: %d", inventory.top[player.x]);
+    mvprintw(12,60,"          ");
+    mvprintw(12,60,"top: %d", inventory.top[player.x]);
     attrset(COLOR_PAIR(7));
     mvprintw(1,67,"%d", score);// draws the score to the screen
     if (gameover) {

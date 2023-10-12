@@ -19,7 +19,8 @@ There are different type of crates:
 
 ┏━┓ Basic Crate
 
-┗━┛ The higher the colour teir the more points you get when you crunch it
+┗━┛ The higher the colour teir the more points you get when you crunch it.
+
 ┓┳┏ TNT Crate
 
 ┛┻┗ On explosion it will destroy the crates around it or end the game if the player is holding it. The higher colour teir the crate is the bigger the explosion .

@@ -16,6 +16,7 @@ The colour teir list is:
 Also the higher the teir the less likely the crate is going to spawn
 
 There are different type of crates:
+
 ┏━┓ Basic Crate
 
 ┗━┛ The higher the colour teir the more points you get when you crunch it

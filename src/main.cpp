@@ -15,24 +15,45 @@
 #include <errno.h>
 #include <cstring>
 #include <time.h> 
+#include <cmath> // math library
 
 using namespace std;
 
-//variabless
+//variables
 
 int score = 0;
 bool gameover = false;
 
 class crate {
     public:
+        enum type {
+            air,
+            basic,
+            tnt,
+        } type;
         int colour;
-        bool air;
+        bool infected;
+        int explode;
 
         void draw(int x, int y) {
-            if (!air) {
+            if (type == air) return;
+            if (type == basic) {
                 attrset(COLOR_PAIR(colour));
                 mvprintw(-2*y+15,7*x+4,"┏━┓");
                 mvprintw(-2*y+16,7*x+4,"┗━┛");
+            }
+            if (type == tnt) {
+                attrset(COLOR_PAIR(colour));
+                if (sin(0.03 * pow(explode, 1.6)) < 0) {
+                    attrset(COLOR_PAIR(7));
+                }
+                explode++;
+                mvprintw(-2*y+15,7*x+4,"┓┳┏");
+                mvprintw(-2*y+16,7*x+4,"┛┻┗");
+                if (explode  > 495) {
+                    mvprintw(-2*y+15,7*x+4,"@#*");
+                    mvprintw(-2*y+16,7*x+4,"&!ඞ");
+                }
             }
         }
 };
@@ -42,47 +63,65 @@ class inventory {
         int nextspawntime;
     public:
         bool spawned;
-        int top[7];
+        short top[7];
         class crate coordinates[7][8];
         inventory() {
             for (int x = 0; x < 7; x++) {
                 top[x] = -1;
                 for (int y = 0; y < 8; y++) {
-                    coordinates[x][y].air = true;
+                    coordinates[x][y].type = crate::air;
+                    coordinates[x][y].colour = 0;
+                    coordinates[x][y].infected = false;
+                    coordinates[x][y].explode = 0;
                 }
             }
         }
 
         bool isEmpty(int x) {
-            return ((top[x] < 0) && (coordinates[x][0].air));
+            return ((top[x] < 0) && (coordinates[x][0].type == crate::air));
         };
 
         bool isFull(int x) {
-            return ((top[x] >= 5) && (!coordinates[x][5].air));
+            return ((top[x] > 4) && (coordinates[x][5].type != crate::air));
         };
 
         class crate pop(int x) {
             if (!isEmpty(x)) {
                 class crate item = coordinates[x][top[x]];
-                coordinates[x][top[x]--].air = true;
+                coordinates[x][top[x]--].type = crate::air;
+                return item;
+            } else {
+                class crate item = {};
+                item.type = crate::air;
                 return item;
             }
         };
 
+        class crate slash(int x, int y) {
+            if ((-1 < x) && (x < 7) && (-1 < y) && (y < 6)) {
+                if (coordinates[x][y].type != crate::air) {
+                    class crate item = coordinates[x][y];
+                    coordinates[x][y].type = crate::air;
+                    top[x]--;
+                    return item;
+                }
+            }
+        }
+
         bool push(int x, class crate item) {
-            if (isFull(x)) {//full
-                return false;
-            } else {
+            if (!isFull(x)) {
                 top[x]++;
                 coordinates[x][top[x]] = item;
                 return true;
+            } else {
+                return false;
             }
         };
 
         void draw() {
             for (int x = 0; x < 7; x++) {
                 for (int y = 0; y < 8; y++) {
-                    coordinates[x][y].draw(x,y);
+                    coordinates[x][y].draw(x, y);
                 }
             }
         };
@@ -90,37 +129,45 @@ class inventory {
         void spawn(int playerx) {//wow
             if (time(0) >= nextspawntime) {
                 srand(time(0));
-                int randomcrate = rand() % 40;
+                int randomcrate=rand()%48;
                 int randomx = rand() % 7;
-                string craterarity[40] = {"blue", "blue", "blue", "blue", "blue", "red", "yellow", "yellow", "yellow", "yellow", "green", "green", "green", "green", "green", "green", "green", "green", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "cyan", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue", "blue"};
+                const char craterarity[49] = {"ryyyyggggggggccccccccccbbbbbbbbbbbbbbbbbttttttth"};
                 if (playerx != randomx) {
                     if (!(isFull(randomx))) {
                         class crate newcrate = {};
-                        if (craterarity[randomcrate] == "blue") {
-                            newcrate.colour = 1;//blue
-                        } else if (craterarity[randomcrate] == "cyan") {
-                            newcrate.colour = 2;//cyan
-                        } else if (craterarity[randomcrate] == "green") {
-                            newcrate.colour = 3;//green
-                        } else if (craterarity[randomcrate] == "yellow") {
-                            newcrate.colour = 4;//yellow
-                        } else if (craterarity[randomcrate] == "red") {
-                            newcrate.colour = 5;//red
-                        } else if (craterarity[randomcrate] == "pink") {
-                            newcrate.colour = 6;//pink
-                        } else if (craterarity[randomcrate] == "white") {
-                            newcrate.colour = 7;//white
-                        } else {
-                            newcrate.colour = 8;//black
+                        newcrate.explode = 0;
+                        switch (craterarity[randomcrate]) {
+                            case 'b'://blue
+                                newcrate.colour = 1;
+                                newcrate.type = crate::basic;
+                                break;
+                            case 'c'://cyan
+                                newcrate.colour = 2;
+                                newcrate.type = crate::basic;
+                                break;
+                            case 'g'://green
+                                newcrate.colour = 3;
+                                newcrate.type = crate::basic;
+                                break;
+                            case 'y'://yellow
+                                newcrate.colour = 4;
+                                newcrate.type = crate::basic;
+                                break;
+                            case 'r'://red
+                                newcrate.colour = 5;
+                                newcrate.type = crate::basic;
+                                break;
+                            case 't'://tnt
+                                newcrate.colour = 5;//red
+                                newcrate.type = crate::tnt;
+                                break;
+                            case 'h'://mega tnt
+                                newcrate.colour = 6;//magenta
+                                newcrate.type = crate::tnt;
+                                break;
                         }
-                        newcrate.air = false;
-                        
-                        if (isFull(randomx)) {//full
-                        } else {
-                            top[randomx]++;
-                            coordinates[randomx][7] = newcrate;
-                        }
-                        // spawned = push(randomx, newcrate);
+                        top[randomx]++;
+                        coordinates[randomx][7] = newcrate;
                     }
                 }
                 nextspawntime = time(0) + rand() % 3 + 1;
@@ -130,9 +177,9 @@ class inventory {
         void gravity() {
             for (int x = 0; x < 7; x++) {
                 for (int y = 1; y < 8; y++) {
-                    if ((coordinates[x][y].air == false) && (coordinates[x][y-1].air == true)) {
+                    if ((coordinates[x][y].type != crate::air) && (coordinates[x][y-1].type == crate::air)) {
                         coordinates[x][y-1] = coordinates[x][y];
-                        coordinates[x][y].air = true;
+                        coordinates[x][y].type = crate::air;
                     }
                 }
             }
@@ -141,13 +188,34 @@ class inventory {
         void crunch() {
             for (int x = 0; x < 7; x++) {
                 for (int y = 0; y < 4; y++) {
-                    if ((coordinates[x][y].air == false) && (coordinates[x][y+1].air == false) && (coordinates[x][y+2].air == false)) {
+                    if ((coordinates[x][y].type != crate::air) && (coordinates[x][y].type == coordinates[x][y+1].type) && (coordinates[x][y].type == coordinates[x][y+2].type)) {
                         if ((coordinates[x][y].colour == coordinates[x][y+1].colour) && (coordinates[x][y].colour == coordinates[x][y+2].colour)) {
                             if (coordinates[x][y].colour < 8) {
                                 coordinates[x][y].colour++;
+                                coordinates[x][y].explode = 0;
                                 pop(x);pop(x);
                                 score += coordinates[x][y].colour;
                             }
+                        }
+                    }
+                }
+            }
+        }
+
+        void explode() {
+            for (int x = 0; x < 7; x++) {
+                for (int y = 0; y < 8; y++) {
+                    if ((coordinates[x][y].type == crate::tnt) && (coordinates[x][y].explode > 500)) {
+                        switch(coordinates[x][y].colour) {
+                            case 5://bomb
+                                slash(x, y);slash(x, y-1);slash(x, y+1);
+                                break;
+                            case 6:// mega bomb
+                                slash(x, y);slash(x, y-1);slash(x, y+1);slash(x+1, y);slash(x-1, y);
+                                break;
+                            case 7:// hyper bomb
+                                slash(x, y);slash(x, y-1);slash(x, y+1);slash(x+1, y);slash(x-1, y);slash(x+1, y+1);slash(x+1, y-1);slash(x-1, y+1);slash(x-1, y-1);
+                                break;
                         }
                     }
                 }
@@ -171,7 +239,10 @@ class player {
         bool down;
 
         player() {
-            holding.air = true;
+            holding.type = crate::air;
+            holding.colour = 0;
+            holding.infected = false;
+            holding.explode = 0;
             down = false;
         }
 
@@ -190,7 +261,7 @@ class player {
             if (button == x) {
                 y = inventory.top[x];
                 if (down == true) {
-                    if (holding.air == false) {// work out how low the arm can go when holding nothing
+                    if (holding.type != crate::air) {// work out how low the arm can go when holding nothing
                         if (inventory.isFull(x)) {// column is full and arm is holding nothing
                             maxarm = 0;
                         } else if (inventory.isEmpty(x)) {// column is empty and arm is holding nothing
@@ -198,7 +269,7 @@ class player {
                         } else { // is holding nothing
                             maxarm = -2*y+11;
                         }
-                    } else if (holding.air == true) {// work out how low the arm can go when holding a crate
+                    } else if (holding.type == crate::air) {// work out how low the arm can go when holding a crate
                         if (inventory.isFull(x)) {// column is full and arm is holding a crate
                             maxarm = 3;
                         } else if (inventory.isEmpty(x)) {// column is empty and arm is holding a crate
@@ -210,11 +281,13 @@ class player {
                 }
 
                 if ((arm == maxarm) && (maxarm != 0)) { //pick up or place
-                    if (holding.air == true) { // grabbing
+                    if (holding.type == crate::air) { // grabbing
                         holding = inventory.pop(x);
-                    } else if (holding.air == false) { // placing
-                        holding.air = !(inventory.push(x, holding));
-                        holding.air = true;
+                    } else if (holding.type != crate::air) { // placing
+                        bool pushed = inventory.push(x, holding);
+                        if (pushed) {
+                            holding.type = crate::air;
+                        }
                     }
                     down = false;
                     maxarm = 0;
@@ -239,10 +312,25 @@ class player {
                 }
             }
             mvprintw(arm+1,7*x+3,"┏━┻━┓");
-            if (!holding.air && holding.colour != 0) {
-                attrset(COLOR_PAIR(holding.colour));
+            attrset(COLOR_PAIR(holding.colour));
+            if (holding.type == crate::air) return;
+            if (holding.type == crate::basic) {
                 mvprintw(arm+2,7*x+4,"┏━┓");
                 mvprintw(arm+3,7*x+4,"┗━┛");
+            }
+            if (holding.type == crate::tnt) {
+                attrset(COLOR_PAIR(holding.colour));
+                if (sin(0.03 * pow(holding.explode, 1.6)) < 0) {
+                    attrset(COLOR_PAIR(7));
+                }
+                holding.explode++;
+
+                mvprintw(arm+2,7*x+4,"┓┳┏");
+                mvprintw(arm+3,7*x+4,"┛┻┗");
+                if (holding.explode  > 495) {
+                    mvprintw(arm+2,7*x+4,"@#*");
+                    mvprintw(arm+3,7*x+4,"&!ඞ");
+                }
             }
         }
 
@@ -265,6 +353,12 @@ string readLine(string str, int n) {
     return s; 
 }
 
+void endgame() {
+    if ((player.holding.explode > 500) || (player.holding.type != crate::air) && (inventory.isFull(0)) && (inventory.isFull(1)) && (inventory.isFull(2)) && (inventory.isFull(3)) && (inventory.isFull(4)) && (inventory.isFull(5)) && (inventory.isFull(6))) {
+        gameover = true;
+    }
+}
+
 void draw() {
     // print the first of the screen line to cover up shape
     attrset(COLOR_PAIR(7)); // delete this line for a cool effect :)
@@ -278,6 +372,8 @@ void draw() {
     player.draw();
     // mvprintw(12,60,"          ");
     // mvprintw(12,60,"top: %d", inventory.top[player.x]);
+    // mvprintw(13,60,"          ");
+    // mvprintw(13,60,"type: %d", player.holding.type);
     attrset(COLOR_PAIR(7));
     mvprintw(1,67,"%d", score);// draws the score to the screen
     if (gameover) {
@@ -285,12 +381,6 @@ void draw() {
         for (int i = 0; i < 3; i++) {
             mvprintw(9+i,0,readLine(gameoverstring, i).c_str());
         }
-    }
-}
-
-void endgame() {
-    if ((player.holding.air == false) && (inventory.isFull(0)) && (inventory.isFull(1)) && (inventory.isFull(2)) && (inventory.isFull(3)) && (inventory.isFull(4)) && (inventory.isFull(5))) {
-        gameover = true;
     }
 }
 
@@ -372,6 +462,7 @@ void game() {
     player.move();
     inventory.gravity();
     inventory.crunch();
+    inventory.explode();
     inventory.spawn(player.x);
     endgame();
 }

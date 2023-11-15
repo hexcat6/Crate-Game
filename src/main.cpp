@@ -27,9 +27,11 @@ bool gameover = false;
 class crate {
     public:
         enum type {
-            air,
-            basic,
-            tnt,
+            air = 0,
+            basic = 1,
+            tnt = 2,
+            heavy = 3,
+            unbreakable = 4,
         } type;
         int colour;
         bool infected;
@@ -54,6 +56,16 @@ class crate {
                     mvprintw(-2*y+15,7*x+4,"@#*");
                     mvprintw(-2*y+16,7*x+4,"&!ඞ");
                 }
+            }
+            if (type == heavy) {
+                attrset(COLOR_PAIR(colour));
+                mvprintw(-2*y+15,7*x+4,"┏┓┓");
+                mvprintw(-2*y+16,7*x+4,"┗┗┛");
+            }
+            if (type == unbreakable) {
+                attrset(COLOR_PAIR(colour));
+                mvprintw(-2*y+15,7*x+4,"┗┳┛");
+                mvprintw(-2*y+16,7*x+4,"┏┻┓");
             }
         }
 };
@@ -86,7 +98,8 @@ class inventory {
         };
 
         class crate pop(int x) {
-            if (!isEmpty(x)) {
+
+            if (!isEmpty(x) && coordinates[x][top[x]].type != crate::heavy) {
                 class crate item = coordinates[x][top[x]];
                 coordinates[x][top[x]--].type = crate::air;
                 return item;
@@ -99,7 +112,8 @@ class inventory {
 
         class crate slash(int x, int y) {
             if ((-1 < x) && (x < 7) && (-1 < y) && (y < 6)) {
-                if (coordinates[x][y].type != crate::air) {
+                if (coordinates[x][y].type != crate::air && coordinates[x][y].type != crate::unbreakable) {
+                    score += coordinates[x][y].type;
                     class crate item = coordinates[x][y];
                     coordinates[x][y].type = crate::air;
                     top[x]--;
@@ -129,9 +143,9 @@ class inventory {
         void spawn(int playerx) {//wow
             if (time(0) >= nextspawntime) {
                 srand(time(0));
-                int randomcrate=rand()%48;
+                int randomcrate=rand()%51;
                 int randomx = rand() % 7;
-                const char craterarity[49] = {"ryyyyggggggggccccccccccbbbbbbbbbbbbbbbbbttttttth"};
+                const char craterarity[51] = {"ryyyyggggggggccccccccccbbbbbbbbbbbbbbbbbttttttthhu"};
                 if (playerx != randomx) {
                     if (!(isFull(randomx))) {
                         class crate newcrate = {};
@@ -161,10 +175,13 @@ class inventory {
                                 newcrate.colour = 5;//red
                                 newcrate.type = crate::tnt;
                                 break;
-                            case 'h'://mega tnt
+                            case 'h'://hevey
                                 newcrate.colour = 6;//magenta
-                                newcrate.type = crate::tnt;
+                                newcrate.type = crate::heavy;
                                 break;
+                            case 'u'://unbreakable
+                                newcrate.colour = 3;//green
+                                newcrate.type = crate::unbreakable;
                         }
                         top[randomx]++;
                         coordinates[randomx][7] = newcrate;
@@ -194,7 +211,7 @@ class inventory {
                                 coordinates[x][y].colour++;
                                 coordinates[x][y].explode = 0;
                                 pop(x);pop(x);
-                                score += coordinates[x][y].colour;
+                                score += coordinates[x][y].colour * coordinates[x][y].type;
                             }
                         }
                     }
@@ -331,6 +348,16 @@ class player {
                     mvprintw(arm+2,7*x+4,"@#*");
                     mvprintw(arm+3,7*x+4,"&!ඞ");
                 }
+            }
+            if (holding.type == crate::heavy) {
+                attrset(COLOR_PAIR(7));
+                mvprintw(-2*y+15,7*x+4,"┏┓┓");
+                mvprintw(-2*y+16,7*x+4,"┗┗┛");
+            }
+            if (holding.type == crate::unbreakable) {
+                attrset(COLOR_PAIR(holding.colour));
+                mvprintw(arm+2,7*x+4,"┗┳┛");
+                mvprintw(arm+3,7*x+4,"┏┻┓");
             }
         }
 
@@ -479,7 +506,7 @@ int main()
     nodelay(stdscr, true);
     mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
     curs_set(0);
-	start_color();
+	  start_color();
     use_default_colors();
 
     init_pair(1, COLOR_BLUE, -1);

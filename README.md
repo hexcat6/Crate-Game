@@ -17,16 +17,20 @@ Also the higher the teir the less likely the crate is going to spawn
 
 There are different type of crates:
 
-┏━┓ Basic Crate\n
+┏━┓ Basic Crate
+
 ┗━┛ The higher the colour teir the more points you get when you crunch it.
 
-┓┳┏ TNT Crate\n
+┓┳┏ TNT Crate
+
 ┛┻┗ On explosion it will destroy the crates around it or end the game if the player is holding it. The higher colour teir the crate is the bigger the explosion.
 
-┏┓┓ Heavy Crate\n
+┏┓┓ Heavy Crate
+
 ┗┗┛ This crate can't be picked up by the claw becuase it's too heavy.
 
-┗┳┛ Unbreakable Crate\n
+┗┳┛ Unbreakable Crate
+
 ┏┻┓ Can't be destroyed by a tnt crate.
 
 Aim of the Game

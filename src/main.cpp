@@ -43,9 +43,10 @@ class crate {
         void draw(int x, int y) {
             attrset(COLOR_PAIR(colour));
             switch(type) {
-                case air:
+                case air: {
                     break;
-                case basic:
+                }
+                case basic: {
                     if (rainbow) {
                         time++;
                         if (time  > 20) {
@@ -59,7 +60,8 @@ class crate {
                     mvprintw(y,x,"┏━┓");
                     mvprintw(y+1,x,"┗━┛");
                     break;
-                case tnt:
+                }
+                case tnt: {
                     if (sin(0.03 * pow(time, 1.6)) < 0) {
                         attrset(COLOR_PAIR(7));
                     }
@@ -71,22 +73,27 @@ class crate {
                         mvprintw(y+1,x,"&!ඞ");
                     }
                     break;
-                case heavy:
+                }
+                case heavy: {
                     mvprintw(y,x,"┏┓┓");
                     mvprintw(y+1,x,"┗┗┛");
                     break;
-                case unbreakable:
+                }
+                case unbreakable: {
                     mvprintw(y,x,"┗┳┛");
                     mvprintw(y+1,x,"┏┻┓");
                     break;
-                case virus:
+                }
+                case virus: {
                     mvprintw(y,x,"┻┳┻");
                     mvprintw(y+1,x,"┳┻┳");
                     break;
-                case item:
+                }
+                case item: {
                     mvprintw(y,x,"┓?┏");
                     mvprintw(y+1,x,"┗━┛");
                     break;
+                }
             };
             if (infected && type != virus && type != air) {
                 attrset(COLOR_PAIR(3));
@@ -109,6 +116,7 @@ class inventory {
                     coordinates[x][y].type = crate::air;
                     coordinates[x][y].colour = 0;
                     coordinates[x][y].infected = false;
+                    coordinates[x][y].rainbow = false;
                     coordinates[x][y].time = 0;
                 }
             }
@@ -198,52 +206,63 @@ class inventory {
                         newcrate.infected = false;
                         newcrate.rainbow = false;
                         switch (craterarity[randomcrate]) {
-                            case 'b'://blue
+                            case 'b': {//blue
                                 newcrate.colour = 1;
                                 newcrate.type = crate::basic;
                                 break;
-                            case 'c'://cyan
+                            }
+                            case 'c': {//cyan
                                 newcrate.colour = 2;
                                 newcrate.type = crate::basic;
                                 break;
-                            case 'g'://green
+                            }
+                            case 'g': {//green
                                 newcrate.colour = 3;
                                 newcrate.type = crate::basic;
                                 break;
-                            case 'y'://yellow
+                            }
+                            case 'y': {//yellow
                                 newcrate.colour = 4;
                                 newcrate.type = crate::basic;
                                 break;
-                            case 'r'://red
+                            }
+                            case 'r': {//red
                                 newcrate.colour = 5;
                                 newcrate.type = crate::basic;
                                 break;
-                            case 't'://tnt
+                            }
+                            case 't': {//tnt
                                 newcrate.colour = 5;//red
                                 newcrate.type = crate::tnt;
                                 break;
-                            case 'h'://hevey
+                            }
+                            case 'h': {//hevey
                                 newcrate.colour = 6;//magenta
                                 newcrate.type = crate::heavy;
                                 break;
-                            case 'u'://unbreakable
+                            }
+                            case 'u': {//unbreakable
                                 newcrate.colour = 3;//green
                                 newcrate.type = crate::unbreakable;
                                 break;
-                            case 'v'://virus
+                            }
+                            case 'v': {//virus
                                 newcrate.colour = 3;//green
                                 newcrate.type = crate::virus;
                                 newcrate.infected = true;
                                 break;
-                            case 'i'://item
+                            }
+                            case 'i': {//item
                                 newcrate.colour = 4;//yellow
                                 newcrate.type = crate::item;
                                 break;
-                            case 'w'://rainbow
+                            }
+                            case 'w': {//rainbow
                                 newcrate.colour = 1;//blue
                                 newcrate.rainbow = true;
                                 newcrate.type = crate::basic;
                                 break;
+                            }
                         }
                         top[randomx]++;
                         coordinates[randomx][7] = newcrate;
@@ -290,15 +309,18 @@ class inventory {
                 for (int y = 0; y < 8; y++) {
                     if ((coordinates[x][y].type == crate::tnt) && (coordinates[x][y].time > 500)) {
                         switch(coordinates[x][y].colour) {
-                            case 5://bomb
+                            case 5: {//bomb
                                 slash(x, y);slash(x, y-1);slash(x, y+1);
                                 break;
-                            case 6:// mega bomb
+                            }
+                            case 6: {// mega bomb
                                 slash(x, y);slash(x, y-1);slash(x, y+1);slash(x+1, y);slash(x-1, y);
                                 break;
-                            case 7:// hyper bomb
+                            }
+                            case 7: {// hyper bomb
                                 slash(x, y);slash(x, y-1);slash(x, y+1);slash(x+1, y);slash(x-1, y);slash(x+1, y+1);slash(x+1, y-1);slash(x-1, y+1);slash(x-1, y-1);
                                 break;
+                            }
                         }
                     }
                 }
@@ -326,14 +348,103 @@ class inventory {
 
         void luckybox() {
             enum powerup {// item crate give you these power ups (column clear, column freeze, slow down time, bomb rain, heal all infected crates)
-                bombrain = 0,
-                columnclear = 1,
-                healall = 2,
-                inventoryclear = 3
-                // columnfreeze = 2,
-                // slowdowntime,
+                bombrain = 0,// spawns lots of tnt crates
+                columnclear = 1,// clears a column
+                healall = 2,// removes all infected crates
+                inventoryclear = 3,// clears the inventory
+                rainbowroad = 4,// spawns lots of rainbow crates
+                hardgone = 5,// heavy and unbreakable crates are all gone
+                metamorphosis = 6,// all crates become basic crates
             } powerup;
-            int randomx = rand() % 7;
+            int randomitem = rand() % 7;
+            switch(randomitem) {
+                case 0: {// bomb rain
+                    for (int x = 0; x < 7; x++) {
+                        for (int i = 0; i < 2; i++) {
+                            if (!isFull(x)) {
+                                class crate newcrate = {};
+                                newcrate.time = 0;
+                                newcrate.infected = false;
+                                newcrate.rainbow = false;
+                                newcrate.colour = 5;//red
+                                newcrate.type = crate::tnt;
+                                top[x]++;
+                                coordinates[x][7-i] = newcrate;
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 1: {// column clear
+                    int randomx = rand() % 7;
+                    for (int y = 0; y < 8; y++) {
+                        if (!isEmpty(randomx)) {
+                            pop(randomx);
+                        }
+                    }
+                    break;
+                }
+                case 2: {// heal all
+                    for (int x = 0; x < 7; x++) {
+                        for (int y = 0; y < 8; y++) {
+                            coordinates[x][y].infected = false;
+                            if (coordinates[x][y].type == crate::virus) {
+                                slash(x,y);
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 3: {// inventoryclear
+                    for (int x = 0; x < 7; x++) {            
+                        for (int y = 0; y < 8; y++) {
+                            if (!isEmpty(x)) {
+                                pop(x);
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 4: {// rainbow road
+                    for (int x = 0; x < 7; x++) {
+                        if (!isFull(x)) {
+                                class crate newcrate = {};
+                                newcrate.time = 0;
+                                newcrate.infected = false;
+                                newcrate.rainbow = true;
+                                newcrate.colour = 1;//blue
+                                newcrate.type = crate::basic;
+                                top[x]++;
+                                coordinates[x][7] = newcrate;
+                        }
+                    }
+                    break;
+                }
+                case 5: {// hard gone
+                    for (int x = 0; x < 7; x++) {            
+                        for (int y = 0; y < 8; y++) {
+                            if (coordinates[x][y].type == crate::unbreakable || coordinates[x][y].type == crate::heavy) {
+                                coordinates[x][y].time = 0;
+                                coordinates[x][y].infected = false;
+                                coordinates[x][y].rainbow = false;
+                                coordinates[x][y].type = crate::air;
+                                top[x]--;
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 6: {// metamorphosis
+                    for (int x = 0; x < 7; x++) {            
+                        for (int y = 0; y < 8; y++) {
+                            if (coordinates[x][y].type != crate::air) {
+                                coordinates[x][y].type = crate::basic;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
         }
 };
 class inventory inventory;
@@ -483,35 +594,42 @@ void draw() {
 
 void game() {
 	switch(ch) {
-        case '1':
+        case '1': {
             player.button = 0;
             player.down = true;
             break;
-        case '2': 
+        }
+        case '2': {
             player.button = 1;
             player.down = true;
             break;
-        case '3': 
+        }
+        case '3': {
             player.button = 2;
             player.down = true;
             break;
-        case '4':
+        }
+        case '4': {
             player.button = 3;
             player.down = true;
             break;
-        case '5':
+        }
+        case '5': {
             player.button = 4;
             player.down = true;
             break;
-        case '6':
+        }
+        case '6': {
             player.button = 5;
             player.down = true;
             break;
-        case '7':
+        }
+        case '7': {
             player.button = 6;
             player.down = true;
             break;
-        case KEY_MOUSE: 
+        }
+        case KEY_MOUSE: {
             MEVENT event;
             player.down = true;
             if (getmouse(&event) == OK) {
@@ -539,21 +657,26 @@ void game() {
             }
 
             break;
-        case KEY_RIGHT:
+        }
+        case KEY_RIGHT: {
             if (player.button < 6) {
                 player.button++;
             }
             break;
-        case KEY_LEFT:
+        }
+        case KEY_LEFT: {
             if (player.button > 0) {
                 player.button--;
             }
             break;
-        case KEY_DOWN:
+        }
+        case KEY_DOWN: {
             player.down = true;
             break;
-        default: 
+        }
+        default: {
             break;
+        }
     }
 
     player.move();

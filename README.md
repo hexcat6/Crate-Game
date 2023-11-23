@@ -33,6 +33,14 @@ There are different types of crates:
 
 ┏┻┓ It can't be destroyed by a TNT crate.
 
+┻┳┻ Virus Crate
+
+┳┻┳ Infects other crates in the same column which disables their ability to crunch.
+
+┓?┏ Item Crate
+
+┗━┛ Give you a random positive effect
+
 Aim of the Game
 - Stack as many crates for as long as possible
 - Stack three of the same crate type and colour to crunch them into a higher-tier colour

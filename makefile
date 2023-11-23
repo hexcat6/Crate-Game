@@ -8,10 +8,21 @@ ifneq ($(OS),Windows_NT)
     endif
 endif
 
-bin/main: bin/main.o 
-	g++ -g -o bin/crate bin/main.o -std=c++20 -Wall -pedantic -Werror $(NCURSES) -fsanitize=undefined,address
 
+bin/main: ./bin/main.o 
+	g++ -g -o bin/crate bin/main.o -std=c++20 $(NCURSES) # -Wall -pedantic -Werror -fsanitize=undefined,address
 
-bin/main.o: src/main.cpp
+run: ./bin/main
+	./bin/crate
+
+clean: ./src/main.cpp
+	rm -rf ./bin
+
+framework: bin/main
+	install_name_tool -change @rpath/libclang_rt.asan_osx_dynamic.dylib @executable_path/../framework/libclang.dylib ./bin/crate
+	install_name_tool -change /usr/lib/libc++.1.dylib @executable_path/../framework/libc++.1.dylib ./bin/crate
+	install_name_tool -change /usr/lib/libc++.1.dylib @executable_path/../framework/libc++.1.tbd ./bin/crate
+
+bin/main.o: ./src/main.cpp
 	mkdir -p bin	
 	g++ -g -c -o bin/main.o src/main.cpp

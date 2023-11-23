@@ -127,10 +127,6 @@ class inventory {
                 coordinates[x][top[x]].rainbow = false;
                 coordinates[x][top[x]--].type = crate::air;
                 if (item.type == crate::item) {
-                    item.time = 0;
-                    item.infected = false;
-                    item.rainbow = false;
-                    item.type = crate::air;
                     luckybox();
                 }
                 return item;
@@ -166,8 +162,10 @@ class inventory {
 
         bool push(int x, class crate item) {
             if (!isFull(x)) {
-                top[x]++;
-                coordinates[x][top[x]] = item;
+                if (item.type != crate::item) {
+                    top[x]++;
+                    coordinates[x][top[x]] = item;
+                }
                 return true;
             } else {
                 return false;

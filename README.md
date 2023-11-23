@@ -50,3 +50,6 @@ Controls
 - Number keys 1 to 7
 - Mouse
 - Arrow keys
+
+Future Plans
+- Add Multiplayer

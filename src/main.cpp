@@ -1,27 +1,16 @@
 //library
-#include <iostream>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <ncurses.h>// colour library
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <ncurses.h>
 #include <unistd.h>
-#include <cstdlib>
-#include <stdio.h>
-#include <random>
-#include <cstring>
-#include <algorithm>
-#include <unistd.h>
-#include <errno.h>
-#include <cstring>
-#include <time.h> 
-#include <cmath> // math library
 
 using namespace std;
 
 //variables
 
 int score = 0;
+int highscore = 0;
 bool gameover = false;
 
 class crate {
@@ -68,7 +57,7 @@ class crate {
                     time++;
                     mvprintw(y,x,"┓┳┏");
                     mvprintw(y+1,x,"┛┻┗");
-                    if (time  > 495) {
+                    if (time  > 295) {
                         mvprintw(y,x,"@#*");
                         mvprintw(y+1,x,"&!ඞ");
                     }
@@ -307,7 +296,7 @@ class inventory {
         void explode() {
             for (int x = 0; x < 7; x++) {
                 for (int y = 0; y < 8; y++) {
-                    if ((coordinates[x][y].type == crate::tnt) && (coordinates[x][y].time > 500)) {
+                    if ((coordinates[x][y].type == crate::tnt) && (coordinates[x][y].time > 300)) {
                         switch(coordinates[x][y].colour) {
                             case 5: {//bomb
                                 slash(x, y);slash(x, y-1);slash(x, y+1);
@@ -347,35 +336,24 @@ class inventory {
         }
 
         void luckybox() {
-            enum powerup {// item crate give you these power ups (column clear, column freeze, slow down time, bomb rain, heal all infected crates)
-                bombrain = 0,// spawns lots of tnt crates
-                columnclear = 1,// clears a column
-                healall = 2,// removes all infected crates
-                inventoryclear = 3,// clears the inventory
-                rainbowroad = 4,// spawns lots of rainbow crates
-                hardgone = 5,// heavy and unbreakable crates are all gone
-                metamorphosis = 6,// all crates become basic crates
-            } powerup;
             int randomitem = rand() % 7;
             switch(randomitem) {
-                case 0: {// bomb rain
+                case 0: {// bomb rain (spawns lots of tnt crates)
                     for (int x = 0; x < 7; x++) {
-                        for (int i = 0; i < 2; i++) {
-                            if (!isFull(x)) {
-                                class crate newcrate = {};
-                                newcrate.time = 0;
-                                newcrate.infected = false;
-                                newcrate.rainbow = false;
-                                newcrate.colour = 5;//red
-                                newcrate.type = crate::tnt;
-                                top[x]++;
-                                coordinates[x][7-i] = newcrate;
-                            }
+                        if (!isFull(x)) {
+                            class crate newcrate = {};
+                            newcrate.time = 0;
+                            newcrate.infected = false;
+                            newcrate.rainbow = false;
+                            newcrate.colour = 5;//red
+                            newcrate.type = crate::tnt;
+                            top[x]++;
+                            coordinates[x][7] = newcrate;
                         }
                     }
                     break;
                 }
-                case 1: {// column clear
+                case 1: {// column clear (clears a column)
                     int randomx = rand() % 7;
                     for (int y = 0; y < 8; y++) {
                         if (!isEmpty(randomx)) {
@@ -384,7 +362,7 @@ class inventory {
                     }
                     break;
                 }
-                case 2: {// heal all
+                case 2: {// heal all (removes all infected crates)
                     for (int x = 0; x < 7; x++) {
                         for (int y = 0; y < 8; y++) {
                             coordinates[x][y].infected = false;
@@ -395,7 +373,7 @@ class inventory {
                     }
                     break;
                 }
-                case 3: {// inventoryclear
+                case 3: {// inventory clear (clears the inventory)
                     for (int x = 0; x < 7; x++) {            
                         for (int y = 0; y < 8; y++) {
                             if (!isEmpty(x)) {
@@ -405,7 +383,7 @@ class inventory {
                     }
                     break;
                 }
-                case 4: {// rainbow road
+                case 4: {// rainbow road (spawns lots of rainbow crates)
                     for (int x = 0; x < 7; x++) {
                         if (!isFull(x)) {
                                 class crate newcrate = {};
@@ -420,7 +398,7 @@ class inventory {
                     }
                     break;
                 }
-                case 5: {// hard gone
+                case 5: {// hard gone (heavy and unbreakable crates are all gone)
                     for (int x = 0; x < 7; x++) {            
                         for (int y = 0; y < 8; y++) {
                             if (coordinates[x][y].type == crate::unbreakable || coordinates[x][y].type == crate::heavy) {
@@ -434,8 +412,8 @@ class inventory {
                     }
                     break;
                 }
-                case 6: {// metamorphosis
-                    for (int x = 0; x < 7; x++) {            
+                case 6: {// metamorphosis (all crates become basic crates)
+                    for (int x = 0; x < 7; x++) {         
                         for (int y = 0; y < 8; y++) {
                             if (coordinates[x][y].type != crate::air) {
                                 coordinates[x][y].type = crate::basic;
@@ -562,7 +540,7 @@ string readLine(string str, int n) {
 }
 
 void endgame() {
-    if ((player.holding.time > 500) || (player.holding.type != crate::air) && (inventory.isFull(0)) && (inventory.isFull(1)) && (inventory.isFull(2)) && (inventory.isFull(3)) && (inventory.isFull(4)) && (inventory.isFull(5)) && (inventory.isFull(6))) {
+    if ((player.holding.time > 300) || (inventory.isFull(0)) && (inventory.isFull(1)) && (inventory.isFull(2)) && (inventory.isFull(3)) && (inventory.isFull(4)) && (inventory.isFull(5)) && (inventory.isFull(6))) {
         gameover = true;
     }
 }
@@ -571,19 +549,61 @@ void draw() {
     // print the first of the screen line to cover up shape
     attrset(COLOR_PAIR(7)); // delete this line for a cool effect :)
 
-    const string screenstring = "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓    ┏━━━━━score━━━━━┓\n┃                                                  ┃    ┃ current: 0    ┃\n┃                                                  ┃    ┃ high: 0       ┃\n┃                                                  ┃    ┗━━━━━━━━━━━━━━━┛\n┃                                                  ┃    ┏━━━━━items━━━━━┓\n┃                                                  ┃    ┃               ┃\n┃                                                  ┃    ┃     T * |     ┃\n┃                                                  ┃    ┗━━━━━━━━━━━━━━━┛\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┗━━┗━1━┛━━┗━2━┛━━┗━3━┛━━┗━4━┛━━┗━5━┛━━┗━6━┛━━┗━7━┛━┛\n";
+    const string screenstring = "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓    ┏━━━━━score━━━━━┓\n┃                                                  ┃    ┃ current: 0    ┃\n┃                                                  ┃    ┃ high: 0       ┃\n┃                                                  ┃    ┗━━━━━━━━━━━━━━━┛\n┃                                                  ┃    ┏━━━━━crate━━━━━┓\n┃                                                  ┃    ┃               ┃\n┃                                                  ┃    ┃               ┃\n┃                                                  ┃    ┃ type:         ┃\n┃                                                  ┃    ┃ infected:     ┃\n┃                                                  ┃    ┗━━━━━━━━━━━━━━━┛\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┃                                                  ┃\n┗━━┗━1━┛━━┗━2━┛━━┗━3━┛━━┗━4━┛━━┗━5━┛━━┗━6━┛━━┗━7━┛━┛\n";
     for (int i = 0; i < 18; i++) {
         mvprintw(i,0,readLine(screenstring, i).c_str());
     }
 
     inventory.draw();
     player.draw();
-    // mvprintw(12,60,"          ");
-    // mvprintw(12,60,"type: %d", player.holding.type);
-    // mvprintw(13,60,"          ");
-    // mvprintw(13,60,"infected: %d", player.holding.infected);
     attrset(COLOR_PAIR(7));
     mvprintw(1,67,"%d", score);// draws the score to the screen
+    mvprintw(2,64,"%d", highscore);
+    if (player.holding.type != crate::air) {
+        player.holding.draw(58, 5);
+        switch (player.holding.type) {
+            case crate::air: {
+                break;
+            }
+            case crate::basic: {
+                if (player.holding.rainbow) {
+                    mvprintw(7,64,"rainbow");
+                } else {
+                    mvprintw(7,64,"basic");
+                }
+                break;
+            }
+            case crate::tnt: {
+                mvprintw(7,64,"tnt");
+                break;
+            }
+            case crate::heavy: {
+                mvprintw(7,64,"heavy");
+                break;
+            }
+            case crate::unbreakable: {
+                mvprintw(7,64,"unbreak");
+                break;
+            }
+            case crate::virus: {
+                mvprintw(7,64,"virus");
+                break;
+            }
+            case crate::item: {
+                mvprintw(7,64,"item");
+                break;
+            }
+        }
+
+        if (player.holding.infected) {
+            attrset(COLOR_PAIR(3));
+            mvprintw(8,68,"yes");
+        } else {
+            attrset(COLOR_PAIR(5));
+            mvprintw(8,68,"no");
+        }
+    }
+    attrset(COLOR_PAIR(7));
     if (gameover) {
         const string gameoverstring = "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\n┃                    Game Over!                    ┃\n┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
         for (int i = 0; i < 3; i++) {
@@ -678,6 +698,9 @@ void game() {
             break;
         }
     }
+    if (highscore < score) {
+        highscore = score;
+    }
 
     player.move();
     inventory.gravity();
@@ -690,8 +713,17 @@ void game() {
 
 //main game loop
 
-int main()
+int main(int argc, char *argv[])
 {
+    string path(argv[0]);
+    path = path.substr(0 ,path.size() - 5);
+
+    fstream scorefile;
+    scorefile.open(path + "score.txt", fstream::app);
+    fstream in(path + "score.txt");
+    fstream out(path + "score.txt");
+    in >> highscore;
+
     //state the defult settings
     setlocale(LC_CTYPE, "");
     initscr();
@@ -724,9 +756,10 @@ int main()
             refresh();
             usleep(50000);
         } else {
-          usleep(500000);
+            usleep(500000);
         }
     }
+    out << highscore;
     //and ends here
     refresh();
     //exit the game

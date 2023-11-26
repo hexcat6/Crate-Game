@@ -52,4 +52,5 @@ Controls
 - Arrow keys
 
 Future Plans
-- Add Multiplayer
+- Add local and online Multiplayer
+- Create a AI to play it

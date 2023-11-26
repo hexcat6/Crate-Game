@@ -229,7 +229,7 @@ class inventory {
                                 break;
                             }
                             case 'u': {//unbreakable
-                                newcrate.colour = 3;//green
+                                newcrate.colour = 2;//cyan
                                 newcrate.type = crate::unbreakable;
                                 break;
                             }
@@ -730,7 +730,7 @@ int main(int argc, char *argv[])
     nodelay(stdscr, true);
     mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
     curs_set(0);
-	  start_color();
+	start_color();
     use_default_colors();
 
     init_pair(1, COLOR_BLUE, -1);
@@ -754,7 +754,7 @@ int main(int argc, char *argv[])
             refresh();
             usleep(50000);
         } else {
-            usleep(500000);
+            usleep(100000);
         }
     }
     out << highscore;

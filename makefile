@@ -21,7 +21,9 @@ clean: ./src/main.cpp
 framework: bin/main
 	install_name_tool -change @rpath/libclang_rt.asan_osx_dynamic.dylib @executable_path/../framework/libclang.dylib ./bin/crate
 	install_name_tool -change /usr/lib/libc++.1.dylib @executable_path/../framework/libc++.1.dylib ./bin/crate
-	install_name_tool -change /usr/lib/libc++.1.dylib @executable_path/../framework/libc++.1.tbd ./bin/crate
+	install_name_tool -change /usr/lib/libncurses.5.4.dylib @executable_path/../framework/libncurses.5.4.dylib ./bin/crate
+	install_name_tool -change /usr/lib/libSystem.B.dylib @executable_path/../framework/libSystem.B.dylib ./bin/crate
+#	install_name_tool -change /usr/lib/libc++.1.dylib @executable_path/../framework/libc++.1.tbd ./bin/crate
 
 bin/main.o: ./src/main.cpp
 	mkdir -p bin	

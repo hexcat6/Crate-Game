@@ -4,6 +4,7 @@
 #include <sstream>
 #include <ncurses.h>
 #include <unistd.h>
+#include <math.h>
 
 using namespace std;
 
